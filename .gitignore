@@ -1,6 +1,7 @@
 .gradle/
 build/
 .idea/
+.kotlin/
 *.iml
 *.apk
 *.aab

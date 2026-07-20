@@ -25,11 +25,3 @@ jobs:
         with:
           name: signboard-debug
           path: build/outputs/apk/debug/Signboard-debug.apk
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/outputs/apk/debug/Signboard-debug.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

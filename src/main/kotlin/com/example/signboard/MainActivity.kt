@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
         FrameLayout.LayoutParams.MATCH_PARENT,
         FrameLayout.LayoutParams.WRAP_CONTENT
       )
-      setPadding(margin, 0, margin, 0)
+      setPadding(margin, margin, margin, 0)
 
       addView(invertCheck, LinearLayout.LayoutParams(
         LinearLayout.LayoutParams.MATCH_PARENT,
