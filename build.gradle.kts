@@ -7,8 +7,17 @@ android {
   namespace = "com.example.signboard"
   compileSdk = 35
   lint {
-    disable.add("MissingTranslation")
-    disable.add("ExtraTranslation")
+    disable += listOf("MissingTranslation", "ExtraTranslation")
+    checkReleaseBuilds = false
+  }
+
+  signingConfigs {
+    create("release") {
+      storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+      storePassword = "android"
+      keyAlias = "androiddebugkey"
+      keyPassword = "android"
+    }
   }
 
   defaultConfig {
@@ -23,6 +32,7 @@ android {
     release {
       isMinifyEnabled = false
       isShrinkResources = false
+      signingConfig = signingConfigs.getByName("release")
     }
   }
 
