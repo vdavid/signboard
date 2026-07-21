@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  namespace = "com.example.signboard"
+  namespace = "com.veszelovszki.signboard"
   compileSdk = 35
   lint {
     disable += listOf("MissingTranslation", "ExtraTranslation")
@@ -13,15 +13,15 @@ android {
 
   signingConfigs {
     create("release") {
-      storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      storeFile = file(System.getProperty("user.home") + "/.android/signboard-release.keystore")
+      storePassword = "signboard-release-key"
+      keyAlias = "signboard"
+      keyPassword = "signboard-release-key"
     }
   }
 
   defaultConfig {
-    applicationId = "com.example.signboard"
+    applicationId = "com.veszelovszki.signboard"
     minSdk = 26
     targetSdk = 35
     versionCode = 2
