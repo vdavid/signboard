@@ -10,23 +10,28 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Prefer the wrapper so CI and local runs use the same Gradle. AGP 9 accepts only a narrow
+# range of Gradle versions, so "whatever gradle is on PATH" is not good enough.
+GRADLE=./gradlew
+[ -x "$GRADLE" ] || GRADLE=gradle
+
 # The APK is the product here, so a size regression is a real regression. Bump this
 # deliberately when the app genuinely grows; don't nudge it to make a build pass.
 MAX_APK_KB=40
 
 if [ "${1:-}" = "--fix" ]; then
   echo "==> ktlintFormat"
-  gradle --quiet ktlintFormat
+  "$GRADLE" --quiet ktlintFormat
 fi
 
 echo "==> ktlintCheck"
-gradle --quiet ktlintCheck
+"$GRADLE" --quiet ktlintCheck
 
 echo "==> lint (release)"
-gradle --quiet lintRelease
+"$GRADLE" --quiet lintRelease
 
 echo "==> assembleRelease"
-gradle --quiet assembleRelease
+"$GRADLE" --quiet assembleRelease
 
 apk=build/outputs/apk/release/Signboard-release.apk
 size_kb=$(( $(wc -c < "$apk") / 1024 ))

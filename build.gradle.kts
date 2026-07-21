@@ -30,12 +30,19 @@ android {
     )
   }
 
+  // The release key lives outside the repo and cannot be regenerated. Builds without it (CI,
+  // a fresh clone) still produce a release APK, just an unsigned one, rather than failing: that
+  // keeps CI able to verify minification, lint, and size without holding the signing key.
+  val releaseKeystore = file(System.getProperty("user.home") + "/.android/signboard-release.keystore")
+
   signingConfigs {
-    create("release") {
-      storeFile = file(System.getProperty("user.home") + "/.android/signboard-release.keystore")
-      storePassword = "signboard-release-key"
-      keyAlias = "signboard"
-      keyPassword = "signboard-release-key"
+    if (releaseKeystore.exists()) {
+      create("release") {
+        storeFile = releaseKeystore
+        storePassword = System.getenv("SIGNBOARD_KEYSTORE_PASSWORD") ?: "signboard-release-key"
+        keyAlias = "signboard"
+        keyPassword = System.getenv("SIGNBOARD_KEY_PASSWORD") ?: "signboard-release-key"
+      }
     }
   }
 
@@ -51,7 +58,7 @@ android {
     release {
       isMinifyEnabled = true
       isShrinkResources = true
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = signingConfigs.findByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
   }
