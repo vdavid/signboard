@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{kt,kts}]
+# 2, not ktlint's default 4: matches the code that's already here.
+indent_size = 2
+max_line_length = 120
+# intellij_idea, not ktlint_official: the official style forces every multiline initializer
+# onto its own line (`val x =` / newline / `Foo().apply {`), which reads worse than the
+# ordinary Kotlin idiom for a file that's mostly view construction.
+ktlint_code_style = intellij_idea
+ktlint_standard_no-wildcard-imports = enabled
+
+[*.{xml,yml,yaml}]
+indent_size = 2
+
+[*.sh]
+indent_size = 2

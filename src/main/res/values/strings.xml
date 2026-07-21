@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Signboard</string>
+
+  <!-- Shown full-screen on first launch, before the user has set any text. -->
+  <string name="default_text">Long-press to edit</string>
+
+  <!-- Edit dialog. -->
+  <string name="invert">Invert</string>
+  <string name="text_hint">Enter text (supports newlines)</string>
+  <string name="recent">Recent:</string>
+  <string name="delete">×</string>
 </resources>
