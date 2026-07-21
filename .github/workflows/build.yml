@@ -53,13 +53,13 @@ jobs:
         with:
           name: signboard-apk
           path: |
-            build/outputs/apk/debug/Signboard-debug.apk
-            build/outputs/apk/release/Signboard-release.apk
+            build/outputs/apk/debug/*.apk
+            build/outputs/apk/release/*.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: signboard-bundle
-          path: build/outputs/bundle/release/Signboard-release.aab
+          path: build/outputs/bundle/release/*.aab
 
       # Only publish artifacts anyone can actually install. An unsigned APK on a release
       # page is worse than no APK.
@@ -68,7 +68,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/outputs/apk/release/Signboard-release.apk
-            build/outputs/bundle/release/Signboard-release.aab
+            build/outputs/apk/release/*.apk
+            build/outputs/bundle/release/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

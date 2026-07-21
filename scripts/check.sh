@@ -33,9 +33,12 @@ echo "==> lint (release)"
 echo "==> assembleRelease"
 "$GRADLE" --quiet assembleRelease
 
-apk=build/outputs/apk/release/Signboard-release.apk
+# Builds without the release keystore (CI, any fresh clone) emit "-release-unsigned.apk",
+# so find the artifact rather than assuming its name.
+apk=$(find build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -1)
+[ -n "$apk" ] || { echo "FAIL: assembleRelease produced no APK"; exit 1; }
 size_kb=$(( $(wc -c < "$apk") / 1024 ))
-echo "==> APK size: ${size_kb} KB (budget ${MAX_APK_KB} KB)"
+echo "==> APK size: ${size_kb} KB (budget ${MAX_APK_KB} KB)  [$(basename "$apk")]"
 if [ "$size_kb" -gt "$MAX_APK_KB" ]; then
   echo "FAIL: APK grew past its budget. Investigate before raising MAX_APK_KB:"
   echo "  ~/Library/Android/sdk/cmdline-tools/latest/bin/apkanalyzer files list $apk"
