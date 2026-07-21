@@ -1,10 +1,11 @@
 package com.veszelovszki.signboard
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -15,12 +16,9 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import org.json.JSONArray
+import org.json.JSONArray // Ships in the Android framework, not a dependency.
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
   private lateinit var textView: TextView
   private lateinit var root: FrameLayout
   private val prefs by lazy { getSharedPreferences("signboard", Context.MODE_PRIVATE) }
@@ -36,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     // Text display with auto-sizing to fill screen
     val padding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
     textView = TextView(this).apply {
-      val savedText = prefs.getString("text", "Long-press to edit")
+      val savedText = prefs.getString("text", getString(R.string.default_text))
       text = savedText
       gravity = android.view.Gravity.CENTER
       setPadding(padding, padding, padding, padding)
@@ -55,23 +53,38 @@ class MainActivity : AppCompatActivity() {
       }
     }
 
-    root.addView(textView, FrameLayout.LayoutParams(
-      FrameLayout.LayoutParams.MATCH_PARENT,
-      FrameLayout.LayoutParams.MATCH_PARENT
-    ))
+    root.addView(
+      textView,
+      FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        FrameLayout.LayoutParams.MATCH_PARENT,
+      ),
+    )
 
     setContentView(root)
     applyTheme()
 
-    // Handle display cutout (camera hole)
-    ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
-      val cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-      val basePadding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
+    // Keep the text clear of a camera hole or notch. DisplayCutout only exists on API 28+;
+    // below that the framework never lets an app draw into a cutout area anyway, so the
+    // base padding is already correct there.
+    root.setOnApplyWindowInsetsListener { _, insets ->
+      val base = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
+      var left = base
+      var top = base
+      var right = base
+      var bottom = base
 
-      val left = maxOf(basePadding, cutout.left)
-      val top = maxOf(basePadding, cutout.top)
-      val right = maxOf(basePadding, cutout.right)
-      val bottom = maxOf(basePadding, cutout.bottom)
+      // Every DisplayCutout call has to sit inside this version check, not just the one that
+      // obtains the cutout. Hoisting the cutout out to a nullable local and reading its
+      // properties outside is runtime-safe but unprovable to lint, and it trips NewApi.
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        insets.displayCutout?.let { cutout ->
+          left = maxOf(left, cutout.safeInsetLeft)
+          top = maxOf(top, cutout.safeInsetTop)
+          right = maxOf(right, cutout.safeInsetRight)
+          bottom = maxOf(bottom, cutout.safeInsetBottom)
+        }
+      }
 
       textView.setPadding(left, top, right, bottom)
       insets
@@ -99,9 +112,10 @@ class MainActivity : AppCompatActivity() {
 
   private fun addToHistory(text: String) {
     val historyJson = prefs.getString("history", "[]")
-    val history = JSONArray(historyJson).let { arr ->
-      (0 until arr.length()).map { arr.getString(it) }.toMutableList()
-    }
+    val history =
+      JSONArray(historyJson).let { arr ->
+        (0 until arr.length()).map { arr.getString(it) }.toMutableList()
+      }
     history.removeAll { it == text }
     history.add(0, text)
     if (history.size > 5) history.removeAt(history.size - 1)
@@ -117,32 +131,35 @@ class MainActivity : AppCompatActivity() {
 
   private fun deleteFromHistory(text: String) {
     val historyJson = prefs.getString("history", "[]")
-    val history = JSONArray(historyJson).let { arr ->
-      (0 until arr.length()).map { arr.getString(it) }.toMutableList()
-    }
+    val history =
+      JSONArray(historyJson).let { arr ->
+        (0 until arr.length()).map { arr.getString(it) }.toMutableList()
+      }
     history.removeAll { it == text }
     prefs.edit().putString("history", JSONArray(history).toString()).apply()
   }
 
   private fun showEditDialog() {
-    val input = EditText(this).apply {
-      setText(textView.text)
-      hint = "Enter text (supports newlines)"
-      minHeight = 200
-      inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
-      // Always use white text in dialog for readability, regardless of invert state
-      setTextColor(android.graphics.Color.WHITE)
-      setHintTextColor(android.graphics.Color.GRAY)
-    }
-
-    val invertCheck = CheckBox(this).apply {
-      text = "Invert"
-      isChecked = prefs.getBoolean("inverted", false)
-      setOnCheckedChangeListener { _, isChecked ->
-        prefs.edit().putBoolean("inverted", isChecked).apply()
-        applyTheme()
+    val input =
+      EditText(this).apply {
+        setText(textView.text)
+        hint = getString(R.string.text_hint)
+        minHeight = 200
+        inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        // Always use white text in dialog for readability, regardless of invert state
+        setTextColor(android.graphics.Color.WHITE)
+        setHintTextColor(android.graphics.Color.GRAY)
       }
-    }
+
+    val invertCheck =
+      CheckBox(this).apply {
+        text = getString(R.string.invert)
+        isChecked = prefs.getBoolean("inverted", false)
+        setOnCheckedChangeListener { _, isChecked ->
+          prefs.edit().putBoolean("inverted", isChecked).apply()
+          applyTheme()
+        }
+      }
 
     val history = getHistory()
     var historyList: ListView? = null
@@ -150,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 
     if (history.isNotEmpty()) {
       historyLabel = TextView(this).apply {
-        text = "Recent:"
+        text = getString(R.string.recent)
         textSize = 12f
         setPadding(0, 12, 0, 4)
       }
@@ -167,119 +184,122 @@ class MainActivity : AppCompatActivity() {
     }
 
     val margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, resources.displayMetrics).toInt()
-    val container = LinearLayout(this).apply {
-      orientation = LinearLayout.VERTICAL
-      layoutParams = FrameLayout.LayoutParams(
-        FrameLayout.LayoutParams.MATCH_PARENT,
-        FrameLayout.LayoutParams.WRAP_CONTENT
-      )
-      setPadding(margin, margin, margin, 0)
-
-      addView(invertCheck, LinearLayout.LayoutParams(
-        LinearLayout.LayoutParams.MATCH_PARENT,
-        LinearLayout.LayoutParams.WRAP_CONTENT
-      ))
-
-      addView(input, LinearLayout.LayoutParams(
-        LinearLayout.LayoutParams.MATCH_PARENT,
-        LinearLayout.LayoutParams.WRAP_CONTENT
-      ).apply {
-        topMargin = 12
-      })
-
-      if (historyLabel != null && historyList != null) {
-        addView(historyLabel)
-
-        // Set list to wrap content initially, then measure actual height
-        historyList.layoutParams = LinearLayout.LayoutParams(
-          LinearLayout.LayoutParams.MATCH_PARENT,
-          LinearLayout.LayoutParams.WRAP_CONTENT
+    val container =
+      LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        layoutParams = FrameLayout.LayoutParams(
+          FrameLayout.LayoutParams.MATCH_PARENT,
+          FrameLayout.LayoutParams.WRAP_CONTENT,
         )
-        addView(historyList)
+        setPadding(margin, margin, margin, 0)
 
-        // Measure actual content height and constrain to 90% of screen
-        historyList.viewTreeObserver.addOnPreDrawListener(object : android.view.ViewTreeObserver.OnPreDrawListener {
-          override fun onPreDraw(): Boolean {
-            historyList.viewTreeObserver.removeOnPreDrawListener(this)
+        addView(
+          invertCheck,
+          LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+          ),
+        )
 
-            val screenHeight = resources.displayMetrics.heightPixels
-            val maxListHeight = (screenHeight * 0.9).toInt() - TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 300f, resources.displayMetrics).toInt()
-
-            val actualHeight = historyList.measuredHeight
-            val finalHeight = minOf(actualHeight, maxListHeight)
-
-            historyList.layoutParams = LinearLayout.LayoutParams(
+        addView(
+          input,
+          LinearLayout
+            .LayoutParams(
               LinearLayout.LayoutParams.MATCH_PARENT,
-              finalHeight
-            )
-            return true
-          }
-        })
-      }
-    }
+              LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+              topMargin = 12
+            },
+        )
 
-    AlertDialog.Builder(this)
+        if (historyLabel != null && historyList != null) {
+          addView(historyLabel)
+
+          // Set list to wrap content initially, then measure actual height
+          historyList.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+          )
+          addView(historyList)
+
+          // Measure actual content height and constrain to 90% of screen
+          historyList.viewTreeObserver.addOnPreDrawListener(
+            object : android.view.ViewTreeObserver.OnPreDrawListener {
+              override fun onPreDraw(): Boolean {
+                historyList.viewTreeObserver.removeOnPreDrawListener(this)
+
+                val screenHeight = resources.displayMetrics.heightPixels
+                val maxListHeight =
+                  (screenHeight * 0.9).toInt() -
+                    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 300f, resources.displayMetrics).toInt()
+
+                val actualHeight = historyList.measuredHeight
+                val finalHeight = minOf(actualHeight, maxListHeight)
+
+                historyList.layoutParams = LinearLayout.LayoutParams(
+                  LinearLayout.LayoutParams.MATCH_PARENT,
+                  finalHeight,
+                )
+                return true
+              }
+            },
+          )
+        }
+      }
+
+    AlertDialog
+      .Builder(this)
       .setView(container)
       .setPositiveButton("OK") { _, _ ->
         val newText = input.text.toString()
         updateText(newText)
-      }
-      .setNegativeButton("Cancel", null)
+      }.setNegativeButton("Cancel", null)
       .show()
-  }
-
-  private fun EditText.applyTextTheme() {
-    val inverted = prefs.getBoolean("inverted", false)
-    if (inverted) {
-      setTextColor(android.graphics.Color.BLACK)
-      setHintTextColor(android.graphics.Color.GRAY)
-    } else {
-      setTextColor(android.graphics.Color.WHITE)
-      setHintTextColor(android.graphics.Color.GRAY)
-    }
   }
 
   private inner class HistoryAdapter(
     context: Context,
     private val items: MutableList<String>,
-    private val onDelete: (String) -> Unit
+    private val onDelete: (String) -> Unit,
   ) : ArrayAdapter<String>(context, 0, items) {
-
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
       val itemText = items[position]
       val displayText = itemText.replace('\n', ' ')
 
-      val view = LinearLayout(context).apply {
-        layoutParams = ViewGroup.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        orientation = LinearLayout.HORIZONTAL
-        setPadding(8, 8, 8, 8)
-      }
+      val view =
+        LinearLayout(context).apply {
+          layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+          )
+          orientation = LinearLayout.HORIZONTAL
+          setPadding(8, 8, 8, 8)
+        }
 
-      val textView = TextView(context).apply {
-        text = displayText
-        layoutParams = LinearLayout.LayoutParams(
-          0,
-          LinearLayout.LayoutParams.WRAP_CONTENT,
-          1f
-        )
-        setPadding(8, 8, 8, 8)
-      }
+      val textView =
+        TextView(context).apply {
+          text = displayText
+          layoutParams = LinearLayout.LayoutParams(
+            0,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            1f,
+          )
+          setPadding(8, 8, 8, 8)
+        }
       view.addView(textView)
 
-      val deleteBtn = Button(context).apply {
-        text = "×"
-        textSize = 20f
-        layoutParams = LinearLayout.LayoutParams(
-          TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt(),
-          TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt()
-        )
-        setOnClickListener {
-          onDelete(itemText)
+      val deleteBtn =
+        Button(context).apply {
+          text = context.getString(R.string.delete)
+          textSize = 20f
+          layoutParams = LinearLayout.LayoutParams(
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt(),
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt(),
+          )
+          setOnClickListener {
+            onDelete(itemText)
+          }
         }
-      }
       view.addView(deleteBtn)
 
       return view
