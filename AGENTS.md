@@ -12,6 +12,7 @@ Package `com.veszelovszki.signboard`. Kotlin, **no dependencies**, two source fi
 - `src/main/res/` — strings, theme, launcher icons, backup rules.
 - `build.gradle.kts` — every non-obvious build decision is commented in place. Read it before changing it.
 - `scripts/check.sh` — everything that must pass before shipping.
+- `scripts/play-status.py` — what's live on each Play track, via the Play Developer API. `scripts/play_token.py` mints the OAuth token it uses.
 - [`branding/CLAUDE.md`](branding/CLAUDE.md) — Play Store icon, feature graphic, screenshots, and the scripts that regenerate them.
 - [`docs/play-listing.md`](docs/play-listing.md) — listing copy, category, asset inventory, version history.
 - [`privacy-policy.md`](privacy-policy.md) — linked from the listing. The app collects nothing.
@@ -85,12 +86,29 @@ bundle.
 - **Unsigned builds are named `Signboard-release-unsigned.apk`.** Anything referring to the artifact must glob rather than hardcode the signed name. This broke the size check once.
 - CI attaches artifacts to a GitHub Release only on a tag *and* only when signing is configured. An unsigned APK on a release page is worse than none.
 
+## Play Developer API
+
+`./scripts/play-status.py` reports each track without opening the Console.
+
+- GCP project `signboard-play-store`, with `androidpublisher.googleapis.com` enabled.
+- Service account `signboard-release@signboard-play-store.iam.gserviceaccount.com`, granted access under Play Console → Users and permissions.
+- Its key is in the sops store as `SIGNBOARD_PLAY_SA_KEY`, base64-encoded JSON, matching the convention of the other entries there. **Never put it in the repo.** Read it with `secret SIGNBOARD_PLAY_SA_KEY`.
+
+Two things to know before trusting API output:
+
+- **`gcloud auth print-access-token` does not work here.** It mints a token with gcloud's own scopes and the API rejects it with `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. `play_token.py` signs a JWT assertion scoped to `androidpublisher` instead, using `openssl` so it needs no third-party libraries.
+- **Everything goes through an "edit"**, the API's unit of work. Open one, read, then always discard it; abandoned edits linger.
+
 ## Releasing
 
 1. Bump `versionCode` (Play rejects a reused one) and `versionName` in `build.gradle.kts`. Log it in [`docs/play-listing.md`](docs/play-listing.md).
 2. `./scripts/check.sh`
 3. `./gradlew bundleRelease` → `build/outputs/bundle/release/Signboard-release.aab`, which is what Play takes.
-4. Upload to Play Console with any changed assets from [`branding/`](branding/CLAUDE.md).
+4. Upload to Play Console with any changed assets from [`branding/`](branding/CLAUDE.md). Straight to Production; no testing-track sequence is required. See [`docs/play-listing.md`](docs/play-listing.md).
+5. `./scripts/play-status.py` to confirm the track picked it up.
+
+A track showing `completed` means its *rollout* is complete, not that review passed. The API
+exposes no review status; the public listing returning 200 instead of 404 is the real signal.
 
 Release builds are signed with `~/.android/signboard-release.keystore`. **That key is not in the
 repo and cannot be regenerated: losing it means losing the ability to update the app on Play.**

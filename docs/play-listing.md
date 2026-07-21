@@ -60,11 +60,34 @@ Known gap: Play's promotional placements want phone screenshots at 9:16, and the
 because that's a real phone's aspect. Play accepts them, they just aren't eligible for some
 promo slots. Letterboxing to 1080x1920 would fix it if that ever matters.
 
+## Checking status
+
+`./scripts/play-status.py` prints what's on each track, straight from the Play Developer API.
+No need to open the Console for "what's live where".
+
 ## Version history
 
-Play rejects a reused `versionCode`, and codes only ever go up.
+Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles: 2, 3, 4, 5.
 
-- 3 — uploaded to Internal testing
-- 5 — current; 1.2. No dependencies, ~29 KB APK, per-line cutout handling
+- 3 — Internal testing, `completed`
+- 4 — Production, `completed`
+- 5 — Production, `completed`; 1.2. No dependencies, ~29 KB APK, per-line cutout handling
 
-Version 4 was built but never uploaded.
+## Publishing
+
+No testing-track sequence is required. The "20 testers for 14 days" rule Google applies to new
+personal developer accounts is a one-time gate before *first* production access, and this app is
+past it: releases go straight to the Production track.
+
+Each production release still goes through review, typically hours to a couple of days.
+
+A track release showing `completed` means its **rollout** is complete, not that review has passed.
+The API has no review-status field at all, and rejection reasons and policy warnings are
+Console-only. The usable public signal is the store listing itself:
+
+```bash
+curl -sL -o /dev/null -w '%{http_code}\n' \
+  'https://play.google.com/store/apps/details?id=com.veszelovszki.signboard&hl=en&gl=US'
+```
+
+404 while the app has never been published publicly, 200 once it is.
