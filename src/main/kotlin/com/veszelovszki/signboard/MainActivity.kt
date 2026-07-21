@@ -1,4 +1,4 @@
-package com.example.signboard
+package com.veszelovszki.signboard
 
 import android.app.AlertDialog
 import android.content.Context
