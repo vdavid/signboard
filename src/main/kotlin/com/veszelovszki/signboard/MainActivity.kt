@@ -3,11 +3,14 @@ package com.veszelovszki.signboard
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
@@ -23,8 +26,36 @@ class MainActivity : Activity() {
   private lateinit var root: FrameLayout
   private val prefs by lazy { getSharedPreferences("signboard", Context.MODE_PRIVATE) }
 
+  /** Most recent insets, kept so cutout padding can be recomputed after the text is laid out. */
+  private var lastInsets: WindowInsets? = null
+
+  /**
+   * Whether cutout padding has been decided for the current text and window size. Adding padding
+   * shrinks the text, which can move it clear of the cutout, which would argue for removing the
+   * padding again: evaluating exactly once per layout generation is what stops that oscillating.
+   */
+  private var cutoutPaddingResolved = false
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    // Let the window extend under the camera cutout instead of letting the system letterbox
+    // the app away from it. Without this the framework reserves the whole cutout strip across
+    // the full width (or height, in landscape), so the sign loses that band on every screen
+    // even though the hole itself is small. Drawing under it and padding by the measured
+    // safe inset below means only the affected edge gives up space, and only as much as the
+    // hole actually needs.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      window.attributes = window.attributes.apply {
+        layoutInDisplayCutoutMode =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // ALWAYS covers landscape too, where the cutout sits on a long edge.
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+          } else {
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+          }
+      }
+    }
 
     // Root container: keep screen on
     root = FrameLayout(this).apply {
@@ -64,31 +95,112 @@ class MainActivity : Activity() {
     setContentView(root)
     applyTheme()
 
-    // Keep the text clear of a camera hole or notch. DisplayCutout only exists on API 28+;
-    // below that the framework never lets an app draw into a cutout area anyway, so the
-    // base padding is already correct there.
     root.setOnApplyWindowInsetsListener { _, insets ->
-      val base = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
-      var left = base
-      var top = base
-      var right = base
-      var bottom = base
-
-      // Every DisplayCutout call has to sit inside this version check, not just the one that
-      // obtains the cutout. Hoisting the cutout out to a nullable local and reading its
-      // properties outside is runtime-safe but unprovable to lint, and it trips NewApi.
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        insets.displayCutout?.let { cutout ->
-          left = maxOf(left, cutout.safeInsetLeft)
-          top = maxOf(top, cutout.safeInsetTop)
-          right = maxOf(right, cutout.safeInsetRight)
-          bottom = maxOf(bottom, cutout.safeInsetBottom)
-        }
-      }
-
-      textView.setPadding(left, top, right, bottom)
+      lastInsets = insets
+      resetCutoutPadding()
       insets
     }
+    // The listener is attached after the window's first inset dispatch, so ask for another
+    // one. Without this the padding can stay at the un-adjusted base until something else
+    // triggers a pass, such as a rotation.
+    root.requestApplyInsets()
+
+    // Cutout padding can only be decided once the text has been laid out, since it depends on
+    // where the lines actually landed. Pre-draw is the first point where that's known.
+    textView.viewTreeObserver.addOnPreDrawListener { resolveCutoutPadding() }
+  }
+
+  /** Drops back to uniform padding and schedules a fresh cutout decision. */
+  private fun resetCutoutPadding() {
+    val base = dp(24)
+    cutoutPaddingResolved = false
+    textView.setPadding(base, base, base, base)
+  }
+
+  /**
+   * Widens padding on an edge only where a cutout actually overlaps a line of text.
+   *
+   * Returns false to skip one frame when the padding changed, so the text is never drawn at the
+   * old padding. Deliberately evaluates at most once per layout generation; see
+   * [cutoutPaddingResolved].
+   */
+  private fun resolveCutoutPadding(): Boolean {
+    if (cutoutPaddingResolved) return true
+    val insets = lastInsets ?: return true
+    val layout = textView.layout ?: return true
+
+    cutoutPaddingResolved = true
+    val base = dp(24)
+    val padding = cutoutPadding(insets, textLineRects(layout), base)
+
+    val unchanged = padding[0] == textView.paddingLeft &&
+      padding[1] == textView.paddingTop &&
+      padding[2] == textView.paddingRight &&
+      padding[3] == textView.paddingBottom
+    if (unchanged) return true
+
+    textView.setPadding(padding[0], padding[1], padding[2], padding[3])
+    return false
+  }
+
+  /**
+   * The laid-out text lines as window-coordinate rectangles.
+   *
+   * Per line rather than one box around the whole block: with multi-line text, a cutout beside a
+   * short line shouldn't inset the long ones.
+   */
+  private fun textLineRects(layout: android.text.Layout): List<Rect> {
+    val location = IntArray(2)
+    textView.getLocationInWindow(location)
+
+    // TextView centers the Layout itself when gravity is CENTER, and doesn't expose that offset,
+    // so mirror the calculation. Line coordinates are relative to the Layout, not the view.
+    val innerHeight = textView.height - textView.compoundPaddingTop - textView.compoundPaddingBottom
+    val verticalOffset = ((innerHeight - layout.height) / 2).coerceAtLeast(0)
+    val originX = location[0] + textView.compoundPaddingLeft
+    val originY = location[1] + textView.compoundPaddingTop + verticalOffset
+
+    return (0 until layout.lineCount).map { line ->
+      Rect(
+        originX + layout.getLineLeft(line).toInt(),
+        originY + layout.getLineTop(line),
+        originX + layout.getLineRight(line).toInt(),
+        originY + layout.getLineBottom(line),
+      )
+    }
+  }
+
+  /**
+   * Padding as [left, top, right, bottom], starting from [base] and growing only on edges where a
+   * cutout genuinely overlaps a line of text.
+   *
+   * Pointedly does not use `safeInsetTop` and friends. Those are bands spanning an entire edge,
+   * far larger than the hole: on a punch-hole phone, clearing a ~120px circle costs the full
+   * screen width. Each cutout's own bounding rect decides both whether to inset and by how much,
+   * so the sign only gives up the strip the camera actually sits in.
+   *
+   * `boundingRects` is API 28; the per-edge `boundingRectTop` accessors are API 29, which is
+   * above this app's minimum.
+   */
+  private fun cutoutPadding(insets: WindowInsets, lines: List<Rect>, base: Int): IntArray {
+    val padding = intArrayOf(base, base, base, base)
+    // Guarding here rather than at the call site keeps every DisplayCutout reference, including
+    // the ones in this method's body, provably API 28+ for lint.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return padding
+    val cutout = insets.displayCutout ?: return padding
+
+    val width = root.width
+    val height = root.height
+    for (bounds in cutout.boundingRects) {
+      if (bounds.isEmpty) continue
+      if (lines.none { Rect.intersects(it, bounds) }) continue
+      // Inset from whichever edge this cutout is attached to, by exactly enough to clear it.
+      if (bounds.left <= 0) padding[0] = maxOf(padding[0], bounds.right)
+      if (bounds.top <= 0) padding[1] = maxOf(padding[1], bounds.bottom)
+      if (width > 0 && bounds.right >= width) padding[2] = maxOf(padding[2], width - bounds.left)
+      if (height > 0 && bounds.bottom >= height) padding[3] = maxOf(padding[3], height - bounds.top)
+    }
+    return padding
   }
 
   private fun applyTheme() {
@@ -107,6 +219,7 @@ class MainActivity : Activity() {
     val lineCount = newText.count { it == '\n' }.plus(1)
     textView.maxLines = lineCount
     prefs.edit().putString("text", newText).apply()
+    resetCutoutPadding()
     addToHistory(newText)
   }
 
@@ -173,13 +286,15 @@ class MainActivity : Activity() {
       }
 
       historyList = ListView(this).apply {
-        adapter = HistoryAdapter(this@MainActivity, history.toMutableList()) { deletedText ->
-          deleteFromHistory(deletedText)
-          (adapter as HistoryAdapter).remove(deletedText)
-        }
-        setOnItemClickListener { _, _, position, _ ->
-          input.setText(history[position])
-        }
+        adapter = HistoryAdapter(
+          this@MainActivity,
+          history.toMutableList(),
+          onSelect = { selected -> input.setText(selected) },
+          onDelete = { deletedText ->
+            deleteFromHistory(deletedText)
+            (adapter as HistoryAdapter).remove(deletedText)
+          },
+        )
       }
     }
 
@@ -260,54 +375,70 @@ class MainActivity : Activity() {
   private inner class HistoryAdapter(
     context: Context,
     private val items: MutableList<String>,
+    private val onSelect: (String) -> Unit,
     private val onDelete: (String) -> Unit,
   ) : ArrayAdapter<String>(context, 0, items) {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
       val itemText = items[position]
-      val displayText = itemText.replace('\n', ' ')
 
-      val view =
+      val row =
         LinearLayout(context).apply {
           layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
           )
           orientation = LinearLayout.HORIZONTAL
-          setPadding(8, 8, 8, 8)
+          gravity = android.view.Gravity.CENTER_VERTICAL
+          minimumHeight = dp(48)
+          background = themedDrawable(android.R.attr.selectableItemBackground)
+          // The row handles its own click rather than relying on the ListView's
+          // OnItemClickListener: a row containing a focusable child (the delete button)
+          // never fires that listener, which is why tapping a history entry did nothing.
+          setOnClickListener { onSelect(itemText) }
         }
 
-      val textView =
+      row.addView(
         TextView(context).apply {
-          text = displayText
-          layoutParams = LinearLayout.LayoutParams(
-            0,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            1f,
-          )
-          setPadding(8, 8, 8, 8)
-        }
-      view.addView(textView)
+          // Collapse newlines so a multi-line entry stays one row.
+          text = itemText.replace('\n', ' ')
+          maxLines = 2
+          ellipsize = android.text.TextUtils.TruncateAt.END
+          layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+          setPadding(dp(8), dp(8), dp(8), dp(8))
+        },
+      )
 
-      val deleteBtn =
-        Button(context).apply {
+      row.addView(
+        Button(context, null, android.R.attr.borderlessButtonStyle).apply {
           text = context.getString(R.string.delete)
-          textSize = 20f
-          layoutParams = LinearLayout.LayoutParams(
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt(),
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt(),
-          )
-          setOnClickListener {
-            onDelete(itemText)
-          }
-        }
-      view.addView(deleteBtn)
+          textSize = 18f
+          minWidth = 0
+          minimumWidth = 0
+          layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
+          // Keeps the button clickable without making it focusable, so it no longer
+          // competes with the row for the tap.
+          isFocusable = false
+          isFocusableInTouchMode = false
+          setOnClickListener { onDelete(itemText) }
+        },
+      )
 
-      return view
+      return row
     }
 
     fun remove(item: String) {
       items.remove(item)
       notifyDataSetChanged()
     }
+  }
+
+  private fun dp(value: Int): Int =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
+
+  /** Resolves a theme attribute that points at a drawable, e.g. a ripple background. */
+  private fun themedDrawable(attr: Int): android.graphics.drawable.Drawable? {
+    val value = TypedValue()
+    theme.resolveAttribute(attr, value, true)
+    return getDrawable(value.resourceId)
   }
 }
