@@ -109,17 +109,21 @@ bundle.
 - Service account `signboard-release@signboard-play-store.iam.gserviceaccount.com`, granted access under Play Console → Users and permissions.
 - Its key is in the sops store as `SIGNBOARD_PLAY_SA_KEY`, base64-encoded JSON, matching the convention of the other entries there. **Never put it in the repo.** Read it with `secret SIGNBOARD_PLAY_SA_KEY`.
 
-Two things to know before trusting API output:
+Things to know before scripting against it:
 
 - **`gcloud auth print-access-token` does not work here.** It mints a token with gcloud's own scopes and the API rejects it with `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. `play_token.py` signs a JWT assertion scoped to `androidpublisher` instead, using `openssl` so it needs no third-party libraries.
-- **Everything goes through an "edit"**, the API's unit of work. Open one, read, then always discard it; abandoned edits linger.
+- **Everything goes through an "edit"**, the API's unit of work. For a read, open one and always discard it; abandoned edits linger. For a write, an edit's uploads are discarded unless it is committed, so a failed commit silently loses the upload and leaves the track untouched.
+- **Brace the edit id: `${EDIT}:commit`, never `$EDIT:commit`.** zsh treats `:c` after a bare parameter as its "resolve command to an absolute path" modifier, so `$EDIT:commit` expands to the id with `:c` swallowed and `ommit` tacked on. The call then 404s with Google's generic HTML error page rather than a JSON API error, which looks nothing like a quoting bug. `:validate` is immune because `:v` isn't a modifier, so validate succeeding tells you nothing about whether commit will.
+
+The service account can publish, not just read: uploading a bundle and rolling it out to production
+works end to end over the API.
 
 ## Releasing
 
 1. Bump `versionCode` (Play rejects a reused one) and `versionName` in `build.gradle.kts`. Log it in [`docs/play-listing.md`](docs/play-listing.md).
 2. `./scripts/check.sh`
 3. `./gradlew bundleRelease` → `build/outputs/bundle/release/Signboard-release.aab`, which is what Play takes.
-4. Upload to Play Console with any changed assets from [`branding/`](branding/CLAUDE.md). Straight to Production; no testing-track sequence is required. See [`docs/play-listing.md`](docs/play-listing.md).
+4. Publish, either way round. In Play Console: upload the `.aab` along with any changed assets from [`branding/`](branding/CLAUDE.md). Over the API: open an edit, `POST` the bundle to the `/upload/` host, `PUT` the track with the new `versionCode` and release notes, `:validate`, then `:commit`. Straight to Production; no testing-track sequence is required. See [`docs/play-listing.md`](docs/play-listing.md).
 5. `./scripts/play-status.py` to confirm the track picked it up.
 
 A track showing `completed` means its *rollout* is complete, not that review passed. The API
