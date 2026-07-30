@@ -1,13 +1,13 @@
 plugins {
   // AGP 9 has built-in Kotlin support; a separate org.jetbrains.kotlin.android plugin
   // is no longer required and AGP rejects it outright.
-  id("com.android.application") version "9.3.0"
+  id("com.android.application") version "9.3.1"
   id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 android {
   namespace = "com.veszelovszki.signboard"
-  compileSdk = 35
+  compileSdk = 37
   lint {
     // Lint the release build too, and treat findings as build failures. This app is small
     // enough that a clean lint run is achievable, so anything new should be dealt with
@@ -22,11 +22,6 @@ android {
       // full-bleed artwork and applies its own 30% corner mask and shadow, so the shape this
       // check wants would be masked twice. See branding/CLAUDE.md.
       "IconLauncherShape",
-      // compileSdk/targetSdk are held at 35 on purpose. Raising targetSdk opts into new
-      // runtime restrictions and needs testing on a real device, which is a separate job
-      // from shipping this build. Revisit deliberately, not by silencing.
-      "OldTargetApi",
-      "GradleDependency",
     )
   }
 
@@ -49,9 +44,9 @@ android {
   defaultConfig {
     applicationId = "com.veszelovszki.signboard"
     minSdk = 26
-    targetSdk = 35
-    versionCode = 5
-    versionName = "1.2"
+    targetSdk = 37
+    versionCode = 6
+    versionName = "1.3"
   }
 
   buildTypes {

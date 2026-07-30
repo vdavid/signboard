@@ -41,6 +41,21 @@ phone** — they land on whatever is actually on screen, which during this proje
 system settings panels. `branding/capture-screenshots.sh` shows the safe pattern: seed state by
 writing SharedPreferences with root on an emulator, rather than driving the UI.
 
+**After any `targetSdk` bump, re-run the cutout check.** It's the part most exposed to platform
+behavior changes, and it fails silently and looks plausible. On an emulator whose API level matches
+the new `targetSdk`, in landscape (where the cutout sits on a long edge):
+
+```bash
+adb shell dumpsys window | grep -oE 'boundingRect=\{Bounds=\[[^]]*\]\}' | head -1   # where the hole is
+adb shell screencap -p /sdcard/s.png && adb pull /sdcard/s.png /tmp/s.png
+magick /tmp/s.png -crop <W>x1000+0+0 +repage -bordercolor black -border 1 -fuzz 25% -trim \
+  -format 'ink x %X..%[fx:page.x+w]\n' info:
+```
+
+Two cases, both required: text long enough to reach the hole must stop clear of it, and text that
+doesn't reach it must stay centred on the screen (ink midpoint ≈ screen midpoint). The second is
+the one that regresses.
+
 ## Size is a feature
 
 The release APK is ~29 KB, down from 648 KB. `scripts/check.sh` enforces a budget so that doesn't
@@ -67,8 +82,8 @@ Each of these cost real time, and every one of them fails *silently*.
 
 - **Gradle may run on the wrong JDK.** Homebrew's Gradle launches on JDK 26, whose version string the IntelliJ code embedded in the Kotlin compiler cannot parse. It throws inside the incremental-compilation cache and surfaces only as a stray `e: Daemon compilation failed: null` under a cheerful `BUILD SUCCESSFUL`. `build.gradle.kts` pins `jvmToolchain(21)`.
 - **AGP 9 has built-in Kotlin support.** Applying `org.jetbrains.kotlin.android` next to it is a hard error. Downgrading to AGP 8.13 is not an escape: it uses a Gradle internal API removed in Gradle 9.6.
-- **Lint is strict on purpose.** `warningsAsErrors` is on. It has caught real bugs here, including API-level errors that were only accidentally safe at runtime. Three checks are disabled, each with a comment. Prefer fixing over extending that list.
-- **`targetSdk`/`compileSdk` are held at 35 deliberately.** Raising `targetSdk` opts into new runtime restrictions and needs device testing, so it's its own task. `OldTargetApi` and `GradleDependency` are muted so this stays a decision rather than a permanently red build.
+- **Lint is strict on purpose.** `warningsAsErrors` is on. It has caught real bugs here, including API-level errors that were only accidentally safe at runtime, and it flags a stale AGP or SDK before Google emails about it. Only `IconLauncherShape` is disabled, with a comment. Prefer fixing over extending that list.
+- **Keep `targetSdk` current, and expect Google to nag if you don't.** Play requires a floor that rises every year, enforced by refusing *updates* (a live app keeps working). Missing it earns an "[Action required] target API level" email. `OldTargetApi` and `GradleDependency` are lint-enabled so a stale SDK or plugin breaks the build instead of arriving as mail later. Bumping `targetSdk` opts into that release's behavior changes, so it needs the cutout checks below re-run, not just a number edit.
 
 ### Android
 

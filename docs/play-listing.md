@@ -71,7 +71,8 @@ Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles
 
 - 3 — Internal testing, `completed`
 - 4 — Production, `completed`
-- 5 — Production, `completed`; 1.2. No dependencies, ~29 KB APK, per-line cutout handling
+- 5 — Production, `completed`; 1.2. No dependencies, ~29 KB APK, per-line cutout handling. First version to actually reach the public listing: approved and live 2026-07-30, nine days after submission.
+- 6 — 1.3. `targetSdk` 37 (Android 17), to meet Play's Aug 31, 2026 requirement
 
 ## Publishing
 
@@ -91,3 +92,23 @@ curl -sL -o /dev/null -w '%{http_code}\n' \
 ```
 
 404 while the app has never been published publicly, 200 once it is.
+
+The first publication took **nine days** (submitted 2026-07-21, live 2026-07-30), with no approval
+email — the listing simply started resolving. A brand-new developer account's first app is the
+slowest path Google has, since they review the developer alongside the app. Later updates are much
+quicker.
+
+## Target API level
+
+Play enforces a target API floor that rises annually, and it does so by refusing *updates*: a live
+app keeps working and installed users are unaffected, but you can't ship anything new. Falling
+behind earns an "[Action required] Your app is affected by Google Play's target API level
+requirements" email.
+
+As of the Aug 31, 2026 deadline the floor is **API 36** for new apps and updates (API 35 for an
+existing app to stay available to new users on newer OS). Extensions to Nov 1, 2026 can be requested
+in Play Console. The email advises "target the latest", which is stronger than the actual policy.
+
+This app targets **37** rather than the required 36: the behavior change that actually affects it,
+mandatory edge-to-edge, lands at 36 either way, so the testing effort is identical and 37 buys a
+year instead of weeks. `targetSdk` doesn't affect device compatibility, only `minSdk` does.
