@@ -72,7 +72,7 @@ Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles
 - 3 — Internal testing, `completed`
 - 4 — Production, `completed`
 - 5 — Production, `completed`; 1.2. No dependencies, ~29 KB APK, per-line cutout handling. First version to actually reach the public listing: approved and live 2026-07-30, nine days after submission.
-- 6 — Production, `completed`; 1.3. `targetSdk` 37 (Android 17), to meet Play's Aug 31, 2026 requirement. Uploaded and rolled out entirely over the API on 2026-07-30, live on the listing 2026-08-02. Review took three days, against nine for the account's first app.
+- 6 — Production, `completed`; 1.3. `targetSdk` 37 (Android 17), to meet Play's Aug 31, 2026 requirement. Uploaded and rolled out entirely over the API on 2026-07-30, live on the listing 2026-08-02. Review took three days, against nine for the account's first app. Also published as GitHub Release `v1.3` on 2026-08-27, the first release-signed APK on that channel; v1.0 and v1.1 carry debug-signed ones.
 
 ## Publishing
 

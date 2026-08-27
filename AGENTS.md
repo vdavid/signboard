@@ -154,9 +154,14 @@ validation and **looks like it worked**. Check the resulting state, never the bu
 3. `./gradlew bundleRelease` → `build/outputs/bundle/release/Signboard-release.aab`, which is what Play takes.
 4. Publish, either way round. In Play Console: upload the `.aab` along with any changed assets from [`branding/`](branding/CLAUDE.md). Over the API: open an edit, `POST` the bundle to the `/upload/` host, `PUT` the track with the new `versionCode` and release notes, `:validate`, then `:commit`. Straight to Production; no testing-track sequence is required. See [`docs/play-listing.md`](docs/play-listing.md).
 5. `./scripts/play-status.py` to confirm the track picked it up.
+6. `git push origin main`, then tag `v<versionName>` and push the tag. CI signs the APK, verifies its certificate, and publishes it to a GitHub Release. Both channels then carry the same version.
 
 A track showing `completed` means its *rollout* is complete, not that review passed. The API
 exposes no review status; the public listing returning 200 instead of 404 is the real signal.
+
+The two channels ship the *same build* under *different signatures*, since Play App Signing
+re-signs what it serves. Keep their versions in step: a GitHub Release lagging Play is how the
+APK there ended up two versions stale and debug-signed.
 
 Release builds are signed with `~/.android/signboard-release.keystore`. **That key is not in the
 repo and cannot be regenerated: losing it means losing the ability to update the app on Play.**
