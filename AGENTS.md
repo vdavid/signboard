@@ -97,9 +97,12 @@ Each of these cost real time, and every one of them fails *silently*.
 `.github/workflows/build.yml` runs `scripts/check.sh`, then builds the debug APK and the release
 bundle.
 
-- **Release signing is optional.** The keystore lives outside the repo, so CI builds an *unsigned* release APK, which is still enough to verify minification, lint, and size. Add a `SIGNBOARD_RELEASE_KEYSTORE` secret (base64 of the keystore) to get installable artifacts.
+- **Tagging `v*` publishes a GitHub Release.** CI signs the APK and attaches it along with the bundle. Everything else (pushes to `main`, pull requests) builds an *unsigned* release APK, which still verifies minification, lint, and size.
+- **The signing key reaches the runner only on a tag.** Three secrets drive it: `SIGNBOARD_RELEASE_KEYSTORE` (base64 of the keystore), `SIGNBOARD_KEYSTORE_PASSWORD`, and `SIGNBOARD_KEY_PASSWORD`. Missing any one gives an unsigned build, since `build.gradle.kts` reads the passwords from the environment with no fallback.
+- **CI verifies the signature before publishing**, matching the APK's certificate against the registered `43:BD:1F:9B:…` fingerprint. An unsigned build succeeds and looks completely normal, so this is checked rather than assumed. A mismatch fails the job and publishes nothing.
 - **Unsigned builds are named `Signboard-release-unsigned.apk`.** Anything referring to the artifact must glob rather than hardcode the signed name. This broke the size check once.
-- CI attaches artifacts to a GitHub Release only on a tag *and* only when signing is configured. An unsigned APK on a release page is worse than none.
+- **The GitHub APK and the Play build have different signatures.** Play App Signing re-signs with Google's key, while the APK here carries the upload key, so Android refuses to update one into the other and switching means uninstalling, which clears the user's saved texts. The release body says so. Anything that changes how releases are signed has to keep that warning honest.
+- `DEBUG_KEYSTORE` is a leftover secret from when CI signed with a debug key; nothing reads it now.
 
 ## Play Developer API
 
