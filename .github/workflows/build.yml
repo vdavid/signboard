@@ -10,6 +10,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # The repo's default token is read-only, which is the right default: only the release
+    # step needs more, and it fails with "Resource not accessible by integration" without
+    # this. Granting it here keeps the permission scoped to this workflow rather than
+    # widening it account-wide.
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v5
 
