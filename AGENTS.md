@@ -157,6 +157,20 @@ exposes no review status; the public listing returning 200 instead of 404 is the
 
 Release builds are signed with `~/.android/signboard-release.keystore`. **That key is not in the
 repo and cannot be regenerated: losing it means losing the ability to update the app on Play.**
-Its passwords are currently hardcoded in `build.gradle.kts` (overridable via
-`SIGNBOARD_KEYSTORE_PASSWORD` / `SIGNBOARD_KEY_PASSWORD`). The keystore file is what actually
-matters, but moving the passwords out is worth doing if this repo ever goes public.
+
+Its passwords come from `SIGNBOARD_KEYSTORE_PASSWORD` and `SIGNBOARD_KEY_PASSWORD`, with no
+in-repo fallback, so export them before `assembleRelease` or `bundleRelease`. Without them the
+build succeeds and logs a warning, but the APK is **unsigned**, so check the signer rather than
+assuming:
+
+```bash
+apksigner verify --print-certs build/outputs/apk/release/Signboard-release.apk
+```
+
+A correct release build reports `CN=David Veszelovszki` and SHA-256 `43:BD:1F:9B:…`. They belong
+in the sops store next to `SIGNBOARD_PLAY_SA_KEY`, which doesn't hold them yet.
+
+This repo is public and the passwords used to be literals in `build.gradle.kts`, so they're in git
+history and should be treated as burned. `keytool -storepasswd` and `keytool -keypasswd` rotate
+them without touching the key itself, leaving the certificate, its fingerprint, and the Play
+registration intact.

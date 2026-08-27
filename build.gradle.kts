@@ -30,14 +30,26 @@ android {
   // keeps CI able to verify minification, lint, and size without holding the signing key.
   val releaseKeystore = file(System.getProperty("user.home") + "/.android/signboard-release.keystore")
 
+  // Passwords come from the environment only. This repo is public, so a literal fallback here
+  // would publish them. Missing passwords downgrade to an unsigned build rather than failing,
+  // matching the no-keystore case, and Play rejects an unsigned bundle loudly if one ever gets
+  // that far. See AGENTS.md, "Releasing", for where to keep them.
+  val keystorePassword = System.getenv("SIGNBOARD_KEYSTORE_PASSWORD")
+  val keyPassword = System.getenv("SIGNBOARD_KEY_PASSWORD")
+
   signingConfigs {
-    if (releaseKeystore.exists()) {
+    if (releaseKeystore.exists() && keystorePassword != null && keyPassword != null) {
       create("release") {
         storeFile = releaseKeystore
-        storePassword = System.getenv("SIGNBOARD_KEYSTORE_PASSWORD") ?: "signboard-release-key"
+        storePassword = keystorePassword
         keyAlias = "signboard"
-        keyPassword = System.getenv("SIGNBOARD_KEY_PASSWORD") ?: "signboard-release-key"
+        this.keyPassword = keyPassword
       }
+    } else if (releaseKeystore.exists()) {
+      logger.warn(
+        "signboard: SIGNBOARD_KEYSTORE_PASSWORD / SIGNBOARD_KEY_PASSWORD are unset, " +
+          "so release builds will be UNSIGNED despite the keystore being present.",
+      )
     }
   }
 
