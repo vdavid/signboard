@@ -83,7 +83,7 @@ Each of these cost real time, and every one of them fails *silently*.
 - **Gradle may run on the wrong JDK.** Homebrew's Gradle launches on JDK 26, whose version string the IntelliJ code embedded in the Kotlin compiler cannot parse. It throws inside the incremental-compilation cache and surfaces only as a stray `e: Daemon compilation failed: null` under a cheerful `BUILD SUCCESSFUL`. `build.gradle.kts` pins `jvmToolchain(21)`.
 - **AGP 9 has built-in Kotlin support.** Applying `org.jetbrains.kotlin.android` next to it is a hard error. Downgrading to AGP 8.13 is not an escape: it uses a Gradle internal API removed in Gradle 9.6.
 - **Lint is strict on purpose.** `warningsAsErrors` is on. It has caught real bugs here, including API-level errors that were only accidentally safe at runtime, and it flags a stale AGP or SDK before Google emails about it. Only `IconLauncherShape` is disabled, with a comment. Prefer fixing over extending that list.
-- **Keep `targetSdk` current, and expect Google to nag if you don't.** Play requires a floor that rises every year, enforced by refusing *updates* (a live app keeps working). Missing it earns an "[Action required] target API level" email. `OldTargetApi` and `GradleDependency` are lint-enabled so a stale SDK or plugin breaks the build instead of arriving as mail later. Bumping `targetSdk` opts into that release's behavior changes, so it needs the cutout checks below re-run, not just a number edit.
+- **Keep `targetSdk` current.** `OldTargetApi` and `GradleDependency` are lint-enabled so a stale SDK or plugin breaks the build instead of arriving as mail later. Bumping `targetSdk` opts into that release's behavior changes, so it needs the cutout checks below re-run, not just a number edit. The Play-side deadline and how to verify what's live: [Play requirements and deadlines](#play-requirements-and-deadlines).
 
 ### Android
 
@@ -117,6 +117,24 @@ Things to know before scripting against it:
 
 The service account can publish, not just read: uploading a bundle and rolling it out to production
 works end to end over the API.
+
+## Play requirements and deadlines
+
+Google enforces a handful of dated requirements against this app. All of them are met today; these
+notes exist so a future session doesn't re-derive the answer from a nag email.
+
+**Notifications lag reality, and Google never retracts them.** The Aug 31, 2026 target-API notice
+was sent hours before the fix was uploaded and still sat in the Console weeks later, red and
+unread, echoed inline on the app dashboard. Check the artifact, not the notification.
+
+- **Target API level, Aug 31, 2026.** Met: `targetSdk` 37 (Android 17) ships in versionCode 6. Play enforces this by refusing *updates*; a live app keeps working. To prove what Play actually holds, `edits.bundles.list` returns a sha1 per uploaded bundle, so matching one against the local `.aab` identifies the build, and `unzip -p <aab> base/manifest/AndroidManifest.xml` shows `targetSdkVersion` as readable text inside the proto manifest.
+- **Android developer verification, Sep 30, 2026.** Met for Play: Google auto-registered `com.veszelovszki.signboard` against the Play App Signing key on 2026-07-21, and the Console shows a green check beside the package name on the app dashboard. **Not** covered: the release APK attached to GitHub Releases is signed with the *upload* key (`~/.android/signboard-release.keystore`), a different certificate that isn't registered. From Sep 30 that APK stops installing on certified devices in the enforcing regions unless the key is added under Play Console → Android developer verification. Registering it, or dropping the APK from the release page, both close the gap.
+- **Memory and DEX thresholds, Feb 2027.** Met by construction. The app holds no bitmaps beyond the launcher icon and its heap is one activity's worth, so the memory thresholds aren't reachable. The DEX rule wants at least 25% coverage from a shrinker, which R8 already exceeds. Keeping `isMinifyEnabled` on is now a publishing requirement, not only a size lever.
+- **Zero-Tap Sign-In, Apr 2027.** Not applicable: it binds apps that support user sign-in, and this one has no accounts.
+
+Nothing here is visible through the Play Developer API. Verification status, policy warnings, and
+review outcomes are Console-only, so the API can confirm *what* is published but never *whether
+Google is happy about it*.
 
 ## Releasing
 

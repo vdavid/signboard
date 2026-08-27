@@ -67,12 +67,12 @@ No need to open the Console for "what's live where".
 
 ## Version history
 
-Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles: 2, 3, 4, 5.
+Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles: 2, 3, 4, 5, 6.
 
 - 3 — Internal testing, `completed`
 - 4 — Production, `completed`
 - 5 — Production, `completed`; 1.2. No dependencies, ~29 KB APK, per-line cutout handling. First version to actually reach the public listing: approved and live 2026-07-30, nine days after submission.
-- 6 — Production, `completed`; 1.3. `targetSdk` 37 (Android 17), to meet Play's Aug 31, 2026 requirement. Uploaded and rolled out entirely over the API on 2026-07-30.
+- 6 — Production, `completed`; 1.3. `targetSdk` 37 (Android 17), to meet Play's Aug 31, 2026 requirement. Uploaded and rolled out entirely over the API on 2026-07-30, live on the listing 2026-08-02. Review took three days, against nine for the account's first app.
 
 ## Publishing
 
