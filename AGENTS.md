@@ -128,13 +128,21 @@ was sent hours before the fix was uploaded and still sat in the Console weeks la
 unread, echoed inline on the app dashboard. Check the artifact, not the notification.
 
 - **Target API level, Aug 31, 2026.** Met: `targetSdk` 37 (Android 17) ships in versionCode 6. Play enforces this by refusing *updates*; a live app keeps working. To prove what Play actually holds, `edits.bundles.list` returns a sha1 per uploaded bundle, so matching one against the local `.aab` identifies the build, and `unzip -p <aab> base/manifest/AndroidManifest.xml` shows `targetSdkVersion` as readable text inside the proto manifest.
-- **Android developer verification, Sep 30, 2026.** Met for Play: Google auto-registered `com.veszelovszki.signboard` against the Play App Signing key on 2026-07-21, and the Console shows a green check beside the package name on the app dashboard. **Not** covered: the release APK attached to GitHub Releases is signed with the *upload* key (`~/.android/signboard-release.keystore`), a different certificate that isn't registered. From Sep 30 that APK stops installing on certified devices in the enforcing regions unless the key is added under Play Console → Android developer verification. Registering it, or dropping the APK from the release page, both close the gap.
+- **Android developer verification, Sep 30, 2026.** Met, for both distribution paths. Google auto-registered `com.veszelovszki.signboard` against its own Play App Signing key on 2026-07-21; the upload key was added by hand on 2026-08-27, because the APK attached to GitHub Releases is signed with that one and an unregistered certificate stops installing in the enforcing regions. Two keys are registered, both `Verified`: `57:0B:E5:…` is Google's, `43:BD:1F:9B:…` is `~/.android/signboard-release.keystore`. **Sign release APKs with that keystore and nothing else.** A new signing key needs registering under Play Console → Android developer verification before anything signed with it goes out.
 - **Memory and DEX thresholds, Feb 2027.** Met by construction. The app holds no bitmaps beyond the launcher icon and its heap is one activity's worth, so the memory thresholds aren't reachable. The DEX rule wants at least 25% coverage from a shrinker, which R8 already exceeds. Keeping `isMinifyEnabled` on is now a publishing requirement, not only a size lever.
 - **Zero-Tap Sign-In, Apr 2027.** Not applicable: it binds apps that support user sign-in, and this one has no accounts.
 
 Nothing here is visible through the Play Developer API. Verification status, policy warnings, and
 review outcomes are Console-only, so the API can confirm *what* is published but never *whether
-Google is happy about it*.
+Google is happy about it*. The `androidpublisher` v3 discovery document has no verification
+resource at all; `appsigning` is Play App Signing, a different mechanism.
+
+Driving the Console with browser automation went badly enough to be worth warning about. Its SPA
+takes 20+ seconds to hydrate, screenshots came back stale and disagreed with the live DOM, clicks
+by coordinate and by element reference both did nothing silently, and `Runtime.evaluate` hit
+45-second renderer timeouts. Worse, setting a form field programmatically updates the visible text
+and even enables the submit button while Angular's form model stays empty, so the submit fails
+validation and **looks like it worked**. Check the resulting state, never the button click.
 
 ## Releasing
 
