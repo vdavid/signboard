@@ -1,7 +1,6 @@
 # Getting Signboard onto F-Droid
 
-Not submitted yet. This is the plan, the build recipe, and the merge request text, so the
-submission is a paste job once the open items are settled.
+Submitted on 2026-11-13 as [merge request !57057](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57057), waiting for F-Droid's reviewers. Their questions arrive as comments there; David answers them himself, from drafts.
 
 F-Droid takes new apps as a merge request against [`fdroiddata`](https://gitlab.com/fdroid/fdroiddata),
 adding one file: `metadata/com.veszelovszki.signboard.yml`. F-Droid then builds the app from
@@ -20,10 +19,9 @@ Done:
 - v1.4 (versionCode 7) is released on Play and GitHub from commit `30b324c`, which carries the license and the metadata. Its GitHub Release APK is the reference binary for the reproducible build.
 - David's fork is `gitlab.com/veszelovszki/fdroiddata`.
 
-Open, in order:
+- The recipe is on the fork's `com.veszelovszki.signboard` branch. The fork's pipeline passed all 12 jobs, and the build log confirms the reproducible build: "compared built binary to supplied reference binary successfully".
 
-1. Push the recipe to the fork on a branch named `com.veszelovszki.signboard`, and get the fork's pipeline to pass.
-2. David opens the merge request titled `New app: Signboard`, with his text below.
+To change the recipe after review comments, edit `metadata/com.veszelovszki.signboard.yml` on that branch in GitLab's web editor. Paste the text in one go: typing it makes the editor auto-indent every line and breaks the YAML.
 
 ## Reproducible builds
 
@@ -76,13 +74,13 @@ Notes on it:
 - No `subdir`: the app module is the repo root.
 - `AllowedAPKSigningKeys` is the SHA-256 that `apksigner verify --print-certs` prints for the GitHub Release APK: the upload key, `~/.android/signboard-release.keystore`.
 - `Writing` is the nearest of F-Droid's categories; none fits a big-text display well. Reviewers may pick another.
-- The build pins `jvmToolchain(21)`. If F-Droid's build server doesn't have JDK 21 on hand, the pipeline fails with a toolchain error, and the usual fix is a `sudo:` block that installs `openjdk-21-jdk-headless`.
+- The build pins `jvmToolchain(21)`, and F-Droid's build server handled it without extra setup.
 - With no keystore present, `build.gradle.kts` produces `Signboard-release-unsigned.apk`, which is what F-Droid expects to find.
 - For reproducible builds off, drop `Binaries` and `AllowedAPKSigningKeys`.
 
 ## Merge request text
 
-David's text, as he edited it on 2026-11-13. Use it as is. Title: `New app: Signboard`. The
+David's text, as submitted. Title: `New app: Signboard`. The
 rest of F-Droid's template (the checklist) stays as it is, with the boxes ticked.
 
 > ### Please introduce the functions and usage of your app in summary, and also attach some screenshots.

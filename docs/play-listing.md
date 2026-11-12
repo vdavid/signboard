@@ -12,44 +12,16 @@ source of truth; Play Console is downstream of it.
 
 ## Copy
 
-Live on Play as of 2026-11-12, as David wrote it.
+The copy is in [`fastlane/metadata/android/<locale>/`](../fastlane/metadata/android): `title.txt`,
+`short_description.txt`, and `full_description.txt`, in English plus Hungarian, Swedish, German,
+Spanish, French, Brazilian Portuguese, and Japanese. Those files are the source of truth. Play
+Console is downstream of them and gets edited by hand; F-Droid reads them at build time.
 
-Title, max 30 characters:
-
-> Signboard
-
-Short description, max 80 characters:
-
-> Displays a full screen text on your phone. Long-press to edit.
-
-Full description, max 4000 characters:
-
-> This is an intentionally minimalistic app.
->
-> Good for:
-> - Telling your address, phone number, social security number on your travels when your Mandarin is just not there yet to do this verbally at speed.
-> - Silently shouting "Go aunt Amalia!" on your tablet at racing events / protests / funerals.
-> - Cheating at tests.
-> - Dating, probably.
->
-> Features:
-> - Full-screen text display with auto-sizing.
-> - Handles portrait-landscape transitions.
-> - Screen stays on while app is open.
-> - White-on-black/black-on-white mode toggle.
-> - Quick access to your recent 5 texts.
-> - Handles notches and camera holes.
-> - 100% local. No ads, no internet, no tracking.
->
-> Long-press the screen anywhere to edit the text.
->
-> With love,
-> David ❤️
-
-**The next version of the copy** is in [`fastlane/metadata/android/`](../fastlane/metadata/android): a
-search-friendlier title and short description, more use cases, same jokes. F-Droid reads its
-listing from that folder at build time. It's a draft until David approves it in Play Console;
-once it's live on Play, replace the text above with it so the two stay the same.
+- Play's short descriptions end with a period; the files don't, because F-Droid's lint rejects a trailing one.
+- David wrote the English full description and approved the title and short description. Claude wrote the translations; David can check the Hungarian and Swedish.
+- **Keep "no ads", "free", and similar out of the short description.** Play Console flags "keywords that indicate price or promotion" there, and a flagged listing isn't eligible for promotion on Play. The full description can say it.
+- This copy went to review on 2026-11-13 together with versionCode 7, replacing the listing David wrote at launch (title "Signboard", short description "Displays a full screen text on your phone. Long-press to edit.").
+- Play Console's listing editor has an "AI asset declaration" step. It covers images and videos, and all of Signboard's are real emulator captures or script-drawn, so the answer is "Don't label assets".
 
 Release notes per version go in Play Console directly; keep them to what a user would notice.
 
