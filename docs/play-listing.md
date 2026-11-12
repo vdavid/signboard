@@ -80,7 +80,7 @@ No need to open the Console for "what's live where".
 
 ## Version history
 
-Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles: 2, 3, 4, 5, 6.
+Play rejects a reused `versionCode`, and codes only ever go up. Uploaded bundles: 2, 3, 4, 5, 6, 7.
 
 - 3 — Internal testing, `completed`
 - 4 — Production, `completed`

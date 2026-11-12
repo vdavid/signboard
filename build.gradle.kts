@@ -57,8 +57,8 @@ android {
     applicationId = "com.veszelovszki.signboard"
     minSdk = 26
     targetSdk = 37
-    versionCode = 6
-    versionName = "1.3"
+    versionCode = 7
+    versionName = "1.4"
   }
 
   buildTypes {

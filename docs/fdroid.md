@@ -80,25 +80,22 @@ Notes on it:
 
 ## Merge request text
 
-Draft, in David's voice. He reviews it before it goes anywhere. Title: `New app: Signboard`.
-The rest of F-Droid's template (the checklist) stays as it is, with the boxes ticked.
+David's text, as he edited it on 2026-11-13. Use it as is. Title: `New app: Signboard`. The
+rest of F-Droid's template (the checklist) stays as it is, with the boxes ticked.
 
 > ### Please introduce the functions and usage of your app in summary, and also attach some screenshots.
 >
-> Signboard shows the text you type full screen, as big as it fits. Long-press anywhere to edit it. That's the whole app.
+> Signboard shows the text you type in full screen. You can long-press anywhere to edit it. That's the whole app. It's 30 kB.
 >
-> It handles rotation, flows text around camera holes, keeps the screen on while it's open, has a white-on-black / black-on-white toggle, and remembers your last 5 texts.
+> It also handles rotation, flows text around camera holes, keeps the screen on while it's open, has a white-on-black / black-on-white toggle, and remembers your last 5 texts.
 >
 > Screenshots are in the repo: https://github.com/vdavid/signboard/tree/main/fastlane/metadata/android/en-US/images/phoneScreenshots
 >
 > ### Please elaborate why you wrote this app. Please highlight the unique functions it provides over other similar apps in F-Droid.
 >
-> I kept needing to show something to someone: an address to a taxi driver, a name at airport arrivals, a message across a loud room. The apps I found for this had ads, scrolling LED effects, or wanted internet access. So I made one that does only this: no dependencies, no permissions, no network, ~30 KB.
+> I kept needing to show something to someone: my address to old post office worker ladies, my 4yo's name to show her how to spell it, my phone number to girls at disco. All similar apps have ads and LED effects and all that crap. So I made this simple one with no deps, no perms, no network, etc.
 >
-> I searched F-Droid for "big text" and "banner text" and found nothing like it.
-
-The last sentence is from a search on 2026-11-12 with F-Droid's own search, which matches
-strictly. Look again by hand before sending.
+> I hope this helps others, too.
 
 ## After it's merged
 
