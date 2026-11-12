@@ -1,0 +1,25 @@
+Skriv något, så visar Signboard det i helskärm, så stort som det får plats. Det är hela appen.
+
+Bra för att:
+- Visa hotellets adress för taxichauffören, eller ett namn på en skylt på flygplatsen.
+- Uppge din adress, ditt telefonnummer och personnummer på resan när din mandarin inte riktigt räcker till för att göra det muntligt i farten.
+- Prata med någon som är döv eller hörselskadad, eller med vem som helst på en högljudd konsert eller bar.
+- Tyst skrika ”Heja faster Amalia!” på surfplattan på tävlingar / demonstrationer / begravningar.
+- Fuska på prov.
+- Dejta, antagligen.
+
+Funktioner:
+- Stor text i helskärm med automatisk storlek.
+- Hanterar växling mellan stående och liggande läge.
+- Skärmen förblir på medan appen är öppen.
+- Växla mellan vitt på svart och svart på vitt.
+- Snabb åtkomst till dina 5 senaste texter.
+- Hanterar flikar och kamerahål.
+- 100 % lokalt. Ingen reklam, inget internet, ingen spårning, inga behörigheter.
+- Pytteliten: hela appen är ~30 kB.
+- Öppen källkod: https://github.com/vdavid/signboard
+
+Tryck länge var som helst på skärmen för att redigera texten.
+
+Med kärlek,
+David ❤️

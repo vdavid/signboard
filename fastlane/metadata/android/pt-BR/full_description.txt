@@ -1,0 +1,25 @@
+Digite algo e o Signboard mostra em tela cheia, do maior tamanho que couber. Esse é o app inteiro.
+
+Bom para:
+- Mostrar o endereço do hotel para o taxista, ou um nome numa plaquinha no aeroporto.
+- Informar seu endereço, telefone ou CPF nas viagens, quando seu mandarim ainda não dá conta de fazer isso falando e com rapidez.
+- Conversar com alguém surdo ou com deficiência auditiva, ou com qualquer pessoa num show ou bar barulhento.
+- Gritar em silêncio "Vai, tia Amália!" no tablet em corridas / protestos / funerais.
+- Colar em provas.
+- Paquerar, provavelmente.
+
+Recursos:
+- Texto grande em tela cheia com tamanho automático.
+- Lida com a troca entre retrato e paisagem.
+- A tela fica ligada enquanto o app está aberto.
+- Alterna entre branco no preto e preto no branco.
+- Acesso rápido aos seus 5 textos recentes.
+- Lida com notches e furos de câmera.
+- 100% local. Sem anúncios, sem internet, sem rastreio, sem permissões.
+- Minúsculo: o app inteiro tem ~30 KB.
+- Código aberto: https://github.com/vdavid/signboard
+
+Toque e segure em qualquer lugar da tela para editar o texto.
+
+Com carinho,
+David ❤️

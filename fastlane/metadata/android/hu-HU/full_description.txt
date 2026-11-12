@@ -1,0 +1,25 @@
+Írj be valamit, és a Signboard teljes képernyőn mutatja, akkora betűkkel, amekkora csak kifér. Ennyi az egész app.
+
+Mire jó:
+- Megmutatni a szállásod címét a taxisnak, vagy egy nevet a reptéri érkezési oldalon.
+- Megadni a címed, telefonszámod, TAJ-számod utazás közben, amikor a mandarinod még nem elég jó ahhoz, hogy ezt szóban, tempósan elmondd.
+- Beszélgetni valakivel, aki siket vagy nagyothalló, vagy bárkivel egy hangos koncerten vagy kocsmában.
+- Csendben kiabálni a tableteden, hogy „Hajrá, Amália néni!”, versenyeken / tüntetéseken / temetéseken.
+- Puskázni dolgozatnál.
+- Randizni, valószínűleg.
+
+Funkciók:
+- Nagy, teljes képernyős szöveg automatikus méretezéssel.
+- Kezeli az álló és fekvő mód közti váltást.
+- A képernyő bekapcsolva marad, amíg az app nyitva van.
+- Váltás fehér-feketén és fekete-fehéren mód között.
+- Gyors elérés a legutóbbi 5 szövegedhez.
+- Kezeli a notch-okat és a kameralyukakat.
+- 100% helyi. Nincs reklám, nincs internet, nincs követés, nincsenek engedélyek.
+- Pici: az egész app ~30 KB.
+- Nyílt forráskódú: https://github.com/vdavid/signboard
+
+A szöveg szerkesztéséhez nyomd hosszan a képernyőt bárhol.
+
+Szeretettel,
+David ❤️

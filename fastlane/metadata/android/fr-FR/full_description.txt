@@ -1,0 +1,25 @@
+Écris quelque chose, et Signboard l'affiche en plein écran, aussi grand que possible. C'est toute l'appli.
+
+Pratique pour :
+- Montrer l'adresse de ton hôtel à un chauffeur de taxi, ou un nom sur une pancarte à l'aéroport.
+- Donner ton adresse, ton numéro de téléphone ou de sécurité sociale en voyage, quand ton mandarin n'est pas encore au niveau pour le faire à l'oral et rapidement.
+- Parler avec une personne sourde ou malentendante, ou avec n'importe qui dans un concert ou un bar bruyant.
+- Crier en silence « Allez tante Amalia ! » sur ta tablette lors de courses / manifs / enterrements.
+- Tricher aux examens.
+- Draguer, probablement.
+
+Fonctionnalités :
+- Texte en grand, en plein écran, avec taille automatique.
+- Gère le passage entre portrait et paysage.
+- L'écran reste allumé tant que l'appli est ouverte.
+- Bascule entre blanc sur noir et noir sur blanc.
+- Accès rapide à tes 5 derniers textes.
+- Gère les encoches et les poinçons de caméra.
+- 100 % local. Sans pub, sans internet, sans pistage, sans autorisations.
+- Minuscule : toute l'appli pèse ~30 Ko.
+- Open source : https://github.com/vdavid/signboard
+
+Appuie longuement n'importe où sur l'écran pour modifier le texte.
+
+Avec amour,
+David ❤️

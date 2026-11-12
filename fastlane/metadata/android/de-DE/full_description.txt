@@ -1,0 +1,25 @@
+Tipp etwas ein, und Signboard zeigt es im Vollbild, so groß wie es passt. Das ist die ganze App.
+
+Gut für:
+- Dem Taxifahrer die Adresse deines Hotels zeigen, oder einen Namen auf einem Abholschild am Flughafen.
+- Auf Reisen deine Adresse, Telefonnummer oder Sozialversicherungsnummer mitteilen, wenn dein Mandarin noch nicht reicht, um das mündlich und zügig zu tun.
+- Mit jemandem sprechen, der gehörlos oder schwerhörig ist, oder mit irgendwem auf einem lauten Konzert oder in einer Bar.
+- Lautlos „Los, Tante Amalia!“ auf deinem Tablet rufen, bei Rennen / Demos / Beerdigungen.
+- Bei Prüfungen schummeln.
+- Dating, wahrscheinlich.
+
+Funktionen:
+- Großer Text im Vollbild mit automatischer Größe.
+- Kommt mit dem Wechsel zwischen Hoch- und Querformat klar.
+- Der Bildschirm bleibt an, solange die App offen ist.
+- Umschalten zwischen Weiß auf Schwarz und Schwarz auf Weiß.
+- Schneller Zugriff auf deine letzten 5 Texte.
+- Kommt mit Notches und Kameralöchern klar.
+- 100 % lokal. Keine Werbung, kein Internet, kein Tracking, keine Berechtigungen.
+- Winzig: Die ganze App ist ~30 KB groß.
+- Open Source: https://github.com/vdavid/signboard
+
+Halte den Bildschirm irgendwo lange gedrückt, um den Text zu bearbeiten.
+
+Alles Liebe,
+David ❤️
