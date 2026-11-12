@@ -19,11 +19,8 @@ Done:
 
 Open, in order:
 
-1. **A GitLab account, logged in.** The fork and the merge request live on gitlab.com. David registers and logs in himself.
-2. **Decide on reproducible builds** (see below). It's a one-way door: an app that starts out signed by F-Droid can't switch to David's signature later without every user reinstalling.
-3. **Release v1.4 (versionCode 7).** The `v1.3` tag predates the license and the metadata, and F-Droid reads both from the commit it builds. A reproducible build also needs the GitHub Release APK to come from the exact commit F-Droid builds. Play gets the same version, as always.
-4. **CI must be green first.** The tag workflow runs `scripts/check.sh` before it publishes, and lint currently fails on the outdated AGP (9.3.2, latest 9.5.1) and Gradle (9.7.1, latest 9.9.1). Gradle 9.9.1 came out on 2026-11-10, so it clears David's three-day rule on 2026-11-13.
-5. Fork `fdroiddata`, add the recipe on a branch named `com.veszelovszki.signboard`, wait for the fork's pipeline to pass, then open the merge request titled `New app: Signboard`.
+1. **Release v1.4 (versionCode 7).** The `v1.3` tag predates the license and the metadata, and F-Droid reads both from the commit it builds. A reproducible build also needs the GitHub Release APK to come from the exact commit F-Droid builds. Play gets the same version, as always.
+2. Fork `fdroiddata`, add the recipe on a branch named `com.veszelovszki.signboard`, wait for the fork's pipeline to pass, then open the merge request titled `New app: Signboard`.
 
 ## Reproducible builds
 
@@ -32,8 +29,8 @@ F-Droid's merge request template asks for them, and asks for a reason if they're
 - **On**: F-Droid builds the app, checks that the result is byte-identical to the APK on GitHub Releases, and then ships *that* APK, with David's signature (`43:BD:1F:9B:…`). F-Droid and GitHub installs can update into each other. If a build ever fails to reproduce, F-Droid skips that version until it's fixed.
 - **Off**: F-Droid signs with its own key. Less to go wrong, but it's a third signature next to Play's and GitHub's, and it can't be changed later.
 
-Signboard is a good candidate for on: Kotlin only, no native code, no dependencies. The recipe
-below has it on. The fork's pipeline is where we find out whether the build reproduces.
+David chose on (2026-11-12). Signboard is a good candidate: Kotlin only, no native code, no
+dependencies. The fork's pipeline is where we find out whether the build reproduces.
 
 ## The recipe
 
