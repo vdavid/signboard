@@ -1,0 +1,25 @@
+Type something, and Signboard shows it full screen, as big as it fits. That's the whole app.
+
+Good for:
+- Showing your hotel's address to a taxi driver, or a name on an airport pickup sign.
+- Telling your address, phone number, social security number on your travels when your Mandarin is just not there yet to do this verbally at speed.
+- Talking with someone who's deaf or hard of hearing, or with anyone at a loud concert or bar.
+- Silently shouting "Go aunt Amalia!" on your tablet at racing events / protests / funerals.
+- Cheating at tests.
+- Dating, probably.
+
+Features:
+- Big full-screen text with auto-sizing.
+- Handles portrait-landscape transitions.
+- Screen stays on while app is open.
+- White-on-black/black-on-white mode toggle.
+- Quick access to your recent 5 texts.
+- Handles notches and camera holes.
+- 100% local. No ads, no internet, no tracking, no permissions.
+- Tiny: the whole app is ~30 KB.
+- Open source: https://github.com/vdavid/signboard
+
+Long-press the screen anywhere to edit the text.
+
+With love,
+David ❤️

@@ -7,25 +7,20 @@ A minimal Android app that displays text on your screen. Long-press to edit, tog
 - **Full-screen display**: Text scales automatically to fit your screen, both axes, in portrait and landscape
 - **Invert mode**: Toggle between black text on white and white text on black
 - **Edit dialog**: Long-press the screen to open a text editor with multiline support
-- **Recent texts**: Quick access to your last 5 entries, swipe to delete any
+- **Recent texts**: Quick access to your last 5 entries, tap × to delete any
 - **Screen on**: The display stays on while the app is open (like video playback)
-- **Notch aware**: Automatically pads around your camera hole in both orientations
+- **Notch aware**: Text flows around your camera hole in both orientations
 - **Persistent**: Your current text and all settings save automatically
 
 ## Install
 
-Build and install the debug APK:
+Get it from [Google Play](https://play.google.com/store/apps/details?id=com.veszelovszki.signboard), or grab the APK from the [latest release](https://github.com/vdavid/signboard/releases/latest).
+
+Or build it yourself:
 
 ```bash
-cd ~/projects-git/vdavid/signboard
-gradle assembleDebug
+./gradlew assembleDebug
 adb install build/outputs/apk/debug/Signboard-debug.apk
-```
-
-Or build release (smaller APK):
-
-```bash
-gradle assembleRelease
 ```
 
 ## Usage
@@ -40,10 +35,11 @@ Text respects newlines: they're preserved and displayed, but the app won't add e
 ## Tech
 
 - Kotlin + Android framework
-- No external dependencies (just androidx essentials)
-- ~3 MB APK (debug)
-- Targets Android 8.0+ (API 26+)
+- No dependencies at all
+- ~30 KB release APK
+- Runs on Android 8.0+ (API 26+)
+- No permissions, no internet, no tracking
 
 ## License
 
-AGPL-3.1
+[MIT](LICENSE)

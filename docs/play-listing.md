@@ -4,7 +4,7 @@ What's been submitted, so a future update doesn't have to reinvent it. Copy here
 source of truth; Play Console is downstream of it.
 
 - **Package**: `com.veszelovszki.signboard`
-- **Category**: Utilities
+- **Category**: Tools
 - **Privacy policy URL**: `https://github.com/vdavid/signboard/blob/main/privacy-policy.md`
   (rendered from [`privacy-policy.md`](../privacy-policy.md); the app collects nothing, so the
   policy says exactly that)
@@ -12,34 +12,44 @@ source of truth; Play Console is downstream of it.
 
 ## Copy
 
+Live on Play as of 2026-11-12, as David wrote it.
+
+Title, max 30 characters:
+
+> Signboard
+
 Short description, max 80 characters:
 
-> Distraction-free fullscreen text display. Long press to edit.
+> Displays a full screen text on your phone. Long-press to edit.
 
 Full description, max 4000 characters:
 
-> Display text fullscreen. That's it.
+> This is an intentionally minimalistic app.
 >
-> Perfect for:
-> - **Displaying notes** or prompts on a big screen
-> - **Teleprompter usage** for presentations
-> - **Quick reference** text you need visible
-> - **Text-only focus** when you need zero distractions
->
-> How it works:
-> - **Display**: Text fills the screen with auto-sizing. Really fills it—handles portrait and landscape, notches, all that.
-> - **Edit**: Long press anywhere to open the editor. Change text, toggle dark/light mode, access recent edits.
-> - **Stays on**: Screen won't sleep while the app is open.
+> Good for:
+> - Telling your address, phone number, social security number on your travels when your Mandarin is just not there yet to do this verbally at speed.
+> - Silently shouting "Go aunt Amalia!" on your tablet at racing events / protests / funerals.
+> - Cheating at tests.
+> - Dating, probably.
 >
 > Features:
-> - Full-screen auto-sized text
-> - White-on-black and black-on-white modes
-> - Quick access to your last 5 edits
-> - Handles notches and camera holes gracefully
-> - Screen stays on while viewing
-> - All text stored locally on your device (zero internet, zero tracking)
+> - Full-screen text display with auto-sizing.
+> - Handles portrait-landscape transitions.
+> - Screen stays on while app is open.
+> - White-on-black/black-on-white mode toggle.
+> - Quick access to your recent 5 texts.
+> - Handles notches and camera holes.
+> - 100% local. No ads, no internet, no tracking.
 >
-> That's all. No fluff, no permissions beyond what's needed, no ads. Just fullscreen text.
+> Long-press the screen anywhere to edit the text.
+>
+> With love,
+> David ❤️
+
+**The next version of the copy** is in [`fastlane/metadata/android/`](../fastlane/metadata/android): a
+search-friendlier title and short description, more use cases, same jokes. F-Droid reads its
+listing from that folder at build time. It's a draft until David approves it in Play Console;
+once it's live on Play, replace the text above with it so the two stay the same.
 
 Release notes per version go in Play Console directly; keep them to what a user would notice.
 
@@ -47,6 +57,9 @@ Release notes per version go in Play Console directly; keep them to what a user 
 
 All generated, all checked in. See [`branding/CLAUDE.md`](../branding/CLAUDE.md) for how to
 regenerate any of them.
+
+`fastlane/metadata/android/en-US/images/` holds copies of the icon, the feature graphic, and five
+phone screenshots for F-Droid. After regenerating anything in `branding/`, copy it over again.
 
 - App icon: `branding/icon-512.png` (512x512, 32-bit PNG, full-bleed, no rounded corners — Play applies its own mask)
 - Feature graphic: `branding/feature-graphic-1024x500.png`
