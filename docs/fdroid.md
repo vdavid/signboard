@@ -17,10 +17,13 @@ Done:
 - Listing metadata is in `fastlane/metadata/android/` (`en-US` plus seven translations). F-Droid requires `en-US` and reads all of it from the built commit.
 - The app has no dependencies, no network use, and no proprietary build tools, so nothing in the inclusion policy needs a workaround. It's older than the three months the policy asks for (first commit 2026-07-21) and has users on Play.
 
+- v1.4 (versionCode 7) is released on Play and GitHub from commit `30b324c`, which carries the license and the metadata. Its GitHub Release APK is the reference binary for the reproducible build.
+- David's fork is `gitlab.com/veszelovszki/fdroiddata`.
+
 Open, in order:
 
-1. **Release v1.4 (versionCode 7).** The `v1.3` tag predates the license and the metadata, and F-Droid reads both from the commit it builds. A reproducible build also needs the GitHub Release APK to come from the exact commit F-Droid builds. Play gets the same version, as always.
-2. Fork `fdroiddata`, add the recipe on a branch named `com.veszelovszki.signboard`, wait for the fork's pipeline to pass, then open the merge request titled `New app: Signboard`.
+1. Push the recipe to the fork on a branch named `com.veszelovszki.signboard`, and get the fork's pipeline to pass.
+2. David opens the merge request titled `New app: Signboard`, with his text below.
 
 ## Reproducible builds
 
@@ -34,8 +37,7 @@ dependencies. The fork's pipeline is where we find out whether the build reprodu
 
 ## The recipe
 
-`metadata/com.veszelovszki.signboard.yml`, for v1.4. Fill in `commit` with the full hash of the
-`v1.4` tag.
+`metadata/com.veszelovszki.signboard.yml`, for v1.4.
 
 ```yaml
 Categories:
@@ -57,11 +59,11 @@ Binaries: https://github.com/vdavid/signboard/releases/download/v%v/Signboard-re
 Builds:
   - versionName: '1.4'
     versionCode: 7
-    commit: <full hash of the v1.4 tag>
+    commit: 30b324c7fb4f7bc01c4e1722b1c39df8f1d435b1
     gradle:
       - yes
 
-AllowedAPKSigningKeys: <SHA-256 of the upload certificate, lowercase hex, no colons>
+AllowedAPKSigningKeys: 43bd1f9bef817d28324d885f72bc4252f52c178d330dd07577340137f4e40cc4
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
@@ -72,7 +74,7 @@ CurrentVersionCode: 7
 Notes on it:
 
 - No `subdir`: the app module is the repo root.
-- `AllowedAPKSigningKeys` is the fingerprint `apksigner verify --print-certs` prints for the GitHub Release APK (it starts `43bd1f9b`).
+- `AllowedAPKSigningKeys` is the SHA-256 that `apksigner verify --print-certs` prints for the GitHub Release APK: the upload key, `~/.android/signboard-release.keystore`.
 - `Writing` is the nearest of F-Droid's categories; none fits a big-text display well. Reviewers may pick another.
 - The build pins `jvmToolchain(21)`. If F-Droid's build server doesn't have JDK 21 on hand, the pipeline fails with a toolchain error, and the usual fix is a `sudo:` block that installs `openjdk-21-jdk-headless`.
 - With no keystore present, `build.gradle.kts` produces `Signboard-release-unsigned.apk`, which is what F-Droid expects to find.

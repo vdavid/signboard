@@ -13,6 +13,7 @@ Package `com.veszelovszki.signboard`. Kotlin, **no dependencies**, two source fi
 - `build.gradle.kts` — every non-obvious build decision is commented in place. Read it before changing it.
 - `scripts/check.sh` — everything that must pass before shipping.
 - `scripts/play-status.py` — what's live on each Play track, via the Play Developer API. `scripts/play_token.py` mints the OAuth token it uses.
+- `scripts/play-release.py` — uploads a bundle and rolls it out on production and internal testing over the same API. Committing sends it to review.
 - [`branding/CLAUDE.md`](branding/CLAUDE.md) — Play Store icon, feature graphic, screenshots, and the scripts that regenerate them.
 - [`docs/play-listing.md`](docs/play-listing.md) — listing copy, category, asset inventory, version history.
 - `fastlane/metadata/android/<locale>/` — listing copy, changelogs, and images in the Fastlane layout. F-Droid reads its listing from here; no Fastlane tooling is involved. Each `versionCode` needs a `changelogs/<versionCode>.txt` (max 500 characters).
@@ -156,9 +157,8 @@ validation and **looks like it worked**. Check the resulting state, never the bu
 1. Bump `versionCode` (Play rejects a reused one) and `versionName` in `build.gradle.kts`. Log it in [`docs/play-listing.md`](docs/play-listing.md), and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 2. `./scripts/check.sh`
 3. `./gradlew bundleRelease` → `build/outputs/bundle/release/Signboard-release.aab`, which is what Play takes.
-4. Publish, either way round. In Play Console: upload the `.aab` along with any changed assets from [`branding/`](branding/CLAUDE.md). Over the API: open an edit, `POST` the bundle to the `/upload/` host, `PUT` the track with the new `versionCode` and release notes, `:validate`, then `:commit`. Straight to Production; no testing-track sequence is required. See [`docs/play-listing.md`](docs/play-listing.md).
+4. Publish. The signing passwords aren't on this machine, so let CI build the signed bundle: `git push origin main`, tag `v<versionName>`, push the tag, and wait for the GitHub Release. Then `gh release download v<versionName>` and `./scripts/play-release.py Signboard-release.aab "<release notes>"`, which uploads it straight to production and internal testing. Changed assets from [`branding/`](branding/CLAUDE.md) go in through Play Console. See [`docs/play-listing.md`](docs/play-listing.md).
 5. `./scripts/play-status.py` to confirm the track picked it up.
-6. `git push origin main`, then tag `v<versionName>` and push the tag. CI signs the APK, verifies its certificate, and publishes it to a GitHub Release. Both channels then carry the same version.
 
 A track showing `completed` means its *rollout* is complete, not that review passed. The API
 exposes no review status; the public listing returning 200 instead of 404 is the real signal.
