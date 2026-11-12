@@ -16,6 +16,7 @@ Package `com.veszelovszki.signboard`. Kotlin, **no dependencies**, two source fi
 - [`branding/CLAUDE.md`](branding/CLAUDE.md) — Play Store icon, feature graphic, screenshots, and the scripts that regenerate them.
 - [`docs/play-listing.md`](docs/play-listing.md) — listing copy, category, asset inventory, version history.
 - `fastlane/metadata/android/<locale>/` — listing copy, changelogs, and images in the Fastlane layout. F-Droid reads its listing from here; no Fastlane tooling is involved. Each `versionCode` needs a `changelogs/<versionCode>.txt` (max 500 characters).
+- [`docs/fdroid.md`](docs/fdroid.md) — the F-Droid submission: what's open, the build recipe, the merge request text.
 - `LICENSE` — MIT.
 - [`privacy-policy.md`](privacy-policy.md) — linked from the listing. The app collects nothing.
 - `.github/workflows/build.yml` — CI.
