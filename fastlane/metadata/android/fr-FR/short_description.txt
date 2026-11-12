@@ -1,1 +1,1 @@
-Affiche un texte en grand, en plein écran, sur ton téléphone. Sans pub
+Affiche un texte en grand, en plein écran, sur ton téléphone
